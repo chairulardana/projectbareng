@@ -1,5 +1,5 @@
 import { createLazyFileRoute } from '@tanstack/react-router';
-import { Box, Typography, Card, CardContent, Grid, CardActions, CircularProgress, Button, TextField, Modal, IconButton, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import { Box, Typography, Card, CardContent, Grid, CardActions, CircularProgress, Button, TextField, Modal, IconButton, FormControl, InputLabel, Select, MenuItem, CircularProgressProps } from "@mui/material";
 import { GetKebab } from '../../../hooks/UseQuery/GetKebab'; 
 import { CreateKebab } from '../../../hooks/UseMutation/PostKebab';
 import { DeleteKebab } from '../../../hooks/UseMutation/DeleteKebab';
@@ -48,13 +48,23 @@ function Kebab() {
   const { mutate: updateKebab } = UpdateKebab();
 
   const [openModal, setOpenModal] = useState(false);
-  const [selectedKebab, setSelectedKebab] = useState<{ nama_Kebab: string; harga: string; size: string; level: number; stock: string; id_Kebab: string } | null>(null);
+  const [selectedKebab, setSelectedKebab] = useState<{ 
+    nama_Kebab: string; 
+    harga: string; 
+    size: string; 
+    level: number; 
+    stock: string; 
+    id_Kebab: string; 
+    imageUrl: string;
+  } | null>(null);
+  
   const [newKebab, setNewKebab] = useState({
     nama_Kebab: '',
     harga: '',
     size: '',
     level: 0,
     stock: '',
+    imageUrl: '', // Added image URL
   });
 
   const [progress, setProgress] = React.useState(10);
@@ -109,14 +119,14 @@ function Kebab() {
   };
 
   const handleCreateKebab = () => {
-    if (!newKebab.nama_Kebab || !newKebab.harga || !newKebab.size || newKebab.level === undefined || !newKebab.stock) {
+    if (!newKebab.nama_Kebab || !newKebab.harga || !newKebab.size || newKebab.level === undefined || !newKebab.stock || !newKebab.imageUrl) {
       Swal.fire('Error', 'All fields are required!', 'error');
       return;
     }
 
     createKebab(newKebab, {
       onSuccess: () => {
-        setNewKebab({ nama_Kebab: '', harga: '', size: '', level: 0, stock: '' });
+        setNewKebab({ nama_Kebab: '', harga: '', size: '', level: 0, stock: '', imageUrl: '' });
         Swal.fire('Success', 'Kebab added successfully!', 'success');
         refetch(); // Refetch the data to get the new kebab added to the list
       },
@@ -127,7 +137,7 @@ function Kebab() {
   };
 
   const handleUpdateKebab = () => {
-    if (!selectedKebab?.nama_Kebab || !selectedKebab?.harga || !selectedKebab?.size || selectedKebab?.level === undefined || !selectedKebab?.stock) {
+    if (!selectedKebab?.nama_Kebab || !selectedKebab?.harga || !selectedKebab?.size || selectedKebab?.level === undefined || !selectedKebab?.stock || !selectedKebab?.imageUrl) {
       Swal.fire('Error', 'All fields are required!', 'error');
       return;
     }
@@ -248,6 +258,16 @@ function Kebab() {
               required
             />
           </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Image URL"
+              name="imageUrl"
+              value={newKebab.imageUrl}
+              onChange={handleInputChange}
+              required
+            />
+          </Grid>
           <Grid item xs={12}>
             <Button variant="contained" color="primary" onClick={handleCreateKebab}>
               Add Kebab
@@ -268,6 +288,7 @@ function Kebab() {
                   <Typography variant="body2">Size: {kebab.size}</Typography>
                   <Typography variant="body2">Level: {kebab.level}</Typography>
                   <Typography variant="body2">Stock: {kebab.stock}</Typography>
+                  {kebab.imageUrl && <img src={kebab.imageUrl} alt={kebab.nama_Kebab} width="100" height="100" />}
                 </CardContent>
                 <CardActions>
                   <IconButton color="primary" onClick={() => handleOpenModal(kebab)}>
@@ -346,6 +367,17 @@ function Kebab() {
                 onChange={handleInputChange}
                 required
               />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Image URL"
+                name="imageUrl"
+                value={selectedKebab?.imageUrl || ''}
+                onChange={handleInputChange}
+                required
+              />
+              {selectedKebab?.imageUrl && <img src={selectedKebab.imageUrl} alt={selectedKebab.nama_Kebab} width="100" height="100" />}
             </Grid>
             <Grid item xs={12}>
               <Button variant="contained" color="primary" onClick={handleUpdateKebab}>

@@ -1,14 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { api } from "../../config/api";
 
-interface FormDeleteDrinkType {
-    id_Drink : number;
-    nama_Minuman : string;
-    harga :number;
-    suhu : string;
-    stock : number;
-}
-
 
 export const useDeleteDrink = () => {
     return useMutation({

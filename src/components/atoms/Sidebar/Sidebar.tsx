@@ -19,6 +19,7 @@ import FastfoodIcon from '@mui/icons-material/Fastfood';
 import BakeryDiningIcon from '@mui/icons-material/BakeryDining';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import MapIcon from '@mui/icons-material/Map'; // Added Map icon
 import { useNavigate } from '@tanstack/react-router';
 import Avatar from '@mui/material/Avatar';
 
@@ -70,11 +71,14 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
   })
 );
 
-// Fungsi untuk mengambil awalan nama
-const getInitials = (name) => {
+interface NameConfig {
+  name: string;
+}
+
+const getInitials = (name: string): string => {
   if (!name) return '';
-  const names = name.split(' ');
-  const initials = names.map((n) => n[0]).join('');
+  const names: string[] = name.split(' ');
+  const initials: string = names.map((n: string): string => n[0]).join('');
   return initials.slice(0, 2).toUpperCase();
 };
 
@@ -82,15 +86,18 @@ export default function MiniDrawer() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
   const navigate = useNavigate();
-  const [user, setUser] = React.useState(null);
+  interface User {
+    name: string;
+    email: string;
+  }
+
+  const [user, setUser] = React.useState<User | null>(null);
 
   React.useEffect(() => {
-    // Ambil data pengguna dari localStorage
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     } else {
-      // Jika tidak ada di localStorage, coba ambil dari cookie
       const cookies = document.cookie.split('; ');
       const userCookie = cookies.find((row) => row.startsWith('user='));
       if (userCookie) {
@@ -108,18 +115,11 @@ export default function MiniDrawer() {
   const handleDrawerClose = () => setOpen(false);
 
   const handleLogout = () => {
-    // Hapus cookies
     document.cookie = "user=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     document.cookie = "isLoggedIn=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-
-    // Hapus user dari localStorage
     localStorage.removeItem("user");
-
-    // Arahkan ke halaman login
     navigate({ to: "/" });
-
-    // Refresh halaman untuk memastikan logout benar-benar bersih
     setTimeout(() => {
       window.location.reload();
     }, 500);
@@ -157,7 +157,7 @@ export default function MiniDrawer() {
 
         <Divider />
         <List>
-          {['Kebab', 'Drink', 'Snack', 'Paket'].map((text, index) => (
+          {['Kebab', 'Drink', 'Snack', 'Paket', 'Map'].map((text, index) => (
             <ListItem key={text} disablePadding sx={{ display: 'block' }}>
               <ListItemButton
                 onClick={() => {
@@ -169,13 +169,17 @@ export default function MiniDrawer() {
                     navigate({ to: '/snack' });
                   } else if (text === 'Paket') {
                     navigate({ to: '/PaketMakanan' });
+                  } else if (text === 'Map') {
+                    navigate({ to: '/map' });
                   }
                 }}
               >
                 <ListItemIcon>
                   {index === 0 ? <LocalDiningIcon /> :
                    index === 1 ? <LocalBarIcon /> :
-                   index === 2 ? <BakeryDiningIcon /> : <FastfoodIcon />}
+                   index === 2 ? <BakeryDiningIcon /> :
+                   index === 3 ? <FastfoodIcon /> :
+                   <MapIcon />}
                 </ListItemIcon>
                 <ListItemText primary={text} sx={{ opacity: open ? 1 : 0 }} />
               </ListItemButton>

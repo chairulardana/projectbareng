@@ -7,6 +7,7 @@ interface FormCreateKebabType {
     size: string; 
     level: number;
     stock: number;
+    imageUrl: string;
 }
 
 export const CreateKebab = () => {

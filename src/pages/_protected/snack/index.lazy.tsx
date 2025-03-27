@@ -48,11 +48,19 @@ function Snack() {
   const { mutate: updateSnack } = UpdateSnack();
 
   const [openModal, setOpenModal] = useState(false);
-  const [selectedSnack, setSelectedSnack] = useState<{ namaSnack: string; harga: string; stock: string; id_Snack: string } | null>(null);
+  const [selectedSnack, setSelectedSnack] = useState<{ 
+    namaSnack: string; 
+    harga: string; 
+    stock: string; 
+    id_Snack: string; 
+    image: string; 
+  } | null>(null);
+
   const [newSnack, setNewSnack] = useState({
     namaSnack: '',
     harga: '',
     stock: '',
+    image: '', // Image URL as a string
   });
 
   const [progress, setProgress] = React.useState(0);
@@ -92,14 +100,14 @@ function Snack() {
   };
 
   const handleCreateSnack = () => {
-    if (!newSnack.namaSnack || !newSnack.harga || !newSnack.stock) {
+    if (!newSnack.namaSnack || !newSnack.harga || !newSnack.stock || !newSnack.image) {
       Swal.fire('Error', 'All fields are required!', 'error');
       return;
     }
 
-    createSnack(newSnack, {
+    createSnack({ ...newSnack }, {
       onSuccess: () => {
-        setNewSnack({ namaSnack: '', harga: '', stock: '' });
+        setNewSnack({ namaSnack: '', harga: '', stock: '', image: '' });
         Swal.fire('Success', 'Snack added successfully!', 'success');
         refetch();
       },
@@ -110,12 +118,12 @@ function Snack() {
   };
 
   const handleUpdateSnack = () => {
-    if (!selectedSnack?.namaSnack || !selectedSnack?.harga || !selectedSnack?.stock) {
+    if (!selectedSnack?.namaSnack || !selectedSnack?.harga || !selectedSnack?.stock || !selectedSnack?.image) {
       Swal.fire('Error', 'All fields are required!', 'error');
       return;
     }
 
-    updateSnack(selectedSnack, {
+    updateSnack({ ...selectedSnack }, {
       onSuccess: () => {
         handleCloseModal();
         Swal.fire('Success', 'Snack updated successfully!', 'success');
@@ -214,6 +222,16 @@ function Snack() {
               required
             />
           </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Image URL"
+              name="image"
+              value={newSnack.image}
+              onChange={handleInputChange}
+              required
+            />
+          </Grid>
           <Grid item xs={12}>
             <Button variant="contained" color="primary" onClick={handleCreateSnack}>
               Add Snack
@@ -232,6 +250,7 @@ function Snack() {
                   <Typography variant="h6">{snack.nama_Snack}</Typography>
                   <Typography variant="body2">Harga: {snack.harga}</Typography>
                   <Typography variant="body2">Stock: {snack.stock}</Typography>
+                  {snack.image && <img src={snack.image} alt={snack.nama_Snack} width="100" height="100" />}
                 </CardContent>
                 <CardActions>
                   <IconButton color="primary" onClick={() => handleOpenModal(snack)}>
@@ -283,6 +302,16 @@ function Snack() {
                 onChange={handleInputChange}
                 required
               />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Image URL"
+                name="image"
+                value={selectedSnack?.image || ''}
+                onChange={handleInputChange}
+              />
+              {selectedSnack?.image && <img src={selectedSnack.image} alt={selectedSnack.namaSnack} width="100" height="100" />}
             </Grid>
             <Grid item xs={12}>
               <Button variant="contained" color="primary" onClick={handleUpdateSnack}>

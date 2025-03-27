@@ -32,6 +32,7 @@ function PaketMakanan() {
     nama_Paket: '',
     harga_Paket: '',
     diskon: 0,
+    stok: 0,
     id_Kebab: '',
     id_Snack: '',
     id_Drink: '',
@@ -39,9 +40,9 @@ function PaketMakanan() {
     nama_Kebab: '',
     nama_Snack: '',
     nama_Minuman: '',
+    image: '',  // Added image field
   });
 
-  // State loading untuk create, update, dan delete
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [deletingPakets, setDeletingPakets] = useState({});
@@ -88,34 +89,32 @@ function PaketMakanan() {
     const snack = snackData.find((s) => s.nama_Snack === newPaket.nama_Snack);
     const drink = drinkData.find((d) => d.nama_Minuman === newPaket.nama_Minuman);
 
-    // Cek apakah nama yang dipilih valid
     if (!kebab || !snack || !drink) {
       Swal.fire('Error', 'Pilih kebab, snack, atau drink yang valid!', 'error');
       return;
     }
 
-    // Pastikan field wajib terisi
-    if (!newPaket.nama_Paket || !newPaket.harga_Paket) {
-      Swal.fire('Error', 'Semua kolom harus diisi!', 'error');
+    if (!newPaket.nama_Paket || !newPaket.harga_Paket || newPaket.stok < 0) {
+      Swal.fire('Error', 'Semua kolom harus diisi dan stok tidak boleh negatif!', 'error');
       return;
     }
 
-    // Buat payload dengan ID berdasarkan nama yang dipilih
     const payload = {
       ...newPaket,
       id_Kebab: kebab.id_Kebab,
       id_Snack: snack.id_Snack,
       id_Drink: drink.id_Drink,
+      stok: parseInt(newPaket.stok) || 0,
     };
 
     setIsCreating(true);
-    // Kirimkan data ke server
     createPaket(payload, {
       onSuccess: () => {
         setNewPaket({
           nama_Paket: '',
           harga_Paket: '',
           diskon: 0,
+          stok: 0,
           id_Kebab: '',
           id_Snack: '',
           id_Drink: '',
@@ -123,9 +122,10 @@ function PaketMakanan() {
           nama_Kebab: '',
           nama_Snack: '',
           nama_Minuman: '',
+          image: '',  // Reset image field
         });
         Swal.fire('Success', 'Paket berhasil ditambahkan!', 'success');
-        refetch(); // Mengambil data ulang setelah berhasil
+        refetch();
         setIsCreating(false);
       },
       onError: (error) => {
@@ -141,32 +141,30 @@ function PaketMakanan() {
     const snack = snackData.find((s) => s.nama_Snack === selectedPaket.nama_Snack);
     const drink = drinkData.find((d) => d.nama_Minuman === selectedPaket.nama_Minuman);
 
-    // Cek apakah nama yang dipilih valid
     if (!kebab || !snack || !drink) {
       Swal.fire('Error', 'Pilih kebab, snack, atau drink yang valid!', 'error');
       return;
     }
 
-    if (!selectedPaket.nama_Paket || !selectedPaket.harga_Paket) {
-      Swal.fire('Error', 'Semua kolom harus diisi!', 'error');
+    if (!selectedPaket.nama_Paket || !selectedPaket.harga_Paket || selectedPaket.stok < 0) {
+      Swal.fire('Error', 'Semua kolom harus diisi dan stok tidak boleh negatif!', 'error');
       return;
     }
 
-    // Buat payload dengan ID berdasarkan nama yang dipilih
     const payload = {
       ...selectedPaket,
       id_Kebab: kebab.id_Kebab,
       id_Snack: snack.id_Snack,
       id_Drink: drink.id_Drink,
+      stok: parseInt(selectedPaket.stok) || 0,
     };
 
     setIsUpdating(true);
-    // Kirimkan data ke server
     updatePaket(payload, {
       onSuccess: () => {
         handleCloseModal();
         Swal.fire('Success', 'Paket berhasil diperbarui!', 'success');
-        refetch(); // Mengambil data ulang setelah berhasil
+        refetch();
         setIsUpdating(false);
       },
       onError: (error) => {
@@ -190,7 +188,7 @@ function PaketMakanan() {
         deletePaket(id, {
           onSuccess: () => {
             Swal.fire('Dihapus!', 'Paket telah dihapus.', 'success');
-            refetch(); // Mengambil data ulang setelah berhasil
+            refetch(); 
             setDeletingPakets((prev) => ({ ...prev, [id]: false }));
           },
           onError: (error) => {
@@ -202,7 +200,6 @@ function PaketMakanan() {
     });
   };
 
-  // Loading dan error handling
   if (isLoading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
@@ -247,12 +244,34 @@ function PaketMakanan() {
               required
             />
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
               label="Diskon (%)"
               name="diskon"
               value={newPaket.diskon}
+              onChange={handleInputChange}
+              required
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Stok"
+              name="stok"
+              type="number"
+              value={newPaket.stok}
+              onChange={handleInputChange}
+              required
+              inputProps={{ min: 0 }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Image URL"
+              name="image"
+              value={newPaket.image}
               onChange={handleInputChange}
               required
             />
@@ -328,7 +347,6 @@ function PaketMakanan() {
       <Grid container spacing={3}>
         {data && data.length > 0 ? (
           data.map((paket) => {
-            // Ambil nama kebab, snack, dan drink berdasarkan id
             const kebab = kebabData.find((k) => k.id_Kebab === paket.id_Kebab);
             const snack = snackData.find((s) => s.id_Snack === paket.id_Snack);
             const drink = drinkData.find((d) => d.id_Drink === paket.id_Drink);
@@ -338,13 +356,14 @@ function PaketMakanan() {
                 <Card>
                   <CardContent>
                     <Typography variant="h6">
-                    {paket.nama_Paket.replace(/_/g, " ")}
+                      {paket.nama_Paket.replace(/_/g, " ")}
                     </Typography>
                     <Typography variant="body2">Harga: {paket.harga_Paket}</Typography>
                     <Typography variant="body2">Diskon: {paket.diskon}%</Typography>
                     <Typography variant="body2">
                       Harga Setelah Diskon: {paket.harga_Paket_After_Diskon}
                     </Typography>
+                    <Typography variant="body2">Stok: {paket.stok}</Typography>
                     <Typography variant="body2">
                       Kebab: {kebab ? kebab.nama_Kebab : 'Tidak Ditemukan'}
                     </Typography>
@@ -354,6 +373,7 @@ function PaketMakanan() {
                     <Typography variant="body2">
                       Drink: {drink ? drink.nama_Minuman : 'Tidak Ditemukan'}
                     </Typography>
+                    {paket.image && <img src={paket.image} alt={paket.nama_Paket} width="100" height="100" />}
                   </CardContent>
                   <CardActions>
                     <IconButton color="primary" onClick={() => handleOpenModal(paket)}>
@@ -422,59 +442,28 @@ function PaketMakanan() {
                 required
               />
             </Grid>
-            {/* Dropdown untuk Kebab */}
-            <Grid item xs={12} sm={4}>
-              <FormControl fullWidth>
-                <InputLabel id="edit-kebab-select-label">Kebab</InputLabel>
-                <Select
-                  labelId="edit-kebab-select-label"
-                  name="nama_Kebab"
-                  value={selectedPaket?.nama_Kebab || ''}
-                  onChange={handleInputChange}
-                >
-                  {kebabData && kebabData.map((kebab) => (
-                    <MenuItem key={kebab.id_Kebab} value={kebab.nama_Kebab}>
-                      {kebab.nama_Kebab}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Stok"
+                name="stok"
+                type="number"
+                value={selectedPaket?.stok || 0}
+                onChange={handleInputChange}
+                required
+                inputProps={{ min: 0 }}
+              />
             </Grid>
-            {/* Dropdown untuk Snack */}
-            <Grid item xs={12} sm={4}>
-              <FormControl fullWidth>
-                <InputLabel id="edit-snack-select-label">Snack</InputLabel>
-                <Select
-                  labelId="edit-snack-select-label"
-                  name="nama_Snack"
-                  value={selectedPaket?.nama_Snack || ''}
-                  onChange={handleInputChange}
-                >
-                  {snackData && snackData.map((snack) => (
-                    <MenuItem key={snack.id_Snack} value={snack.nama_Snack}>
-                      {snack.nama_Snack}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            {/* Dropdown untuk Drink */}
-            <Grid item xs={12} sm={4}>
-              <FormControl fullWidth>
-                <InputLabel id="edit-drink-select-label">Drink</InputLabel>
-                <Select
-                  labelId="edit-drink-select-label"
-                  name="nama_Minuman"
-                  value={selectedPaket?.nama_Minuman || ''}
-                  onChange={handleInputChange}
-                >
-                  {drinkData && drinkData.map((drink) => (
-                    <MenuItem key={drink.id_Drink} value={drink.nama_Minuman}>
-                      {drink.nama_Minuman}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Image URL"
+                name="image"
+                value={selectedPaket?.image || ''}
+                onChange={handleInputChange}
+                required
+              />
+              {selectedPaket?.image && <img src={selectedPaket.image} alt={selectedPaket.nama_Paket} width="100" height="100" />}
             </Grid>
             <Grid item xs={12}>
               <Button

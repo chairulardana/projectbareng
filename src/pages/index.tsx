@@ -53,7 +53,17 @@ export default function LoginPage() {
       console.log("Response dari backend:", response);
 
       if (response && response.token && response.user) {
-        // Simpan data ke cookies
+        // Periksa apakah role pengguna adalah 'Admin'
+        if (response.user.role !== 'Admin') {
+          Swal.fire({
+            icon: 'error',
+            title: 'Akses Ditolak',
+            text: 'Hanya pengguna dengan role Admin yang dapat mengakses halaman ini.',
+          });
+          return;
+        }
+
+        // Simpan data ke cookies jika role Admin
         Cookies.set('isLoggedIn', 'true', { expires: 1, path: '/' });
         Cookies.set('authToken', response.token, { expires: 1, path: '/' });
         Cookies.set('user', JSON.stringify(response.user), { expires: 1, path: '/' });

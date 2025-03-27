@@ -7,6 +7,7 @@ interface FormUpdateDrinkType {
     harga :number;
     suhu : string;
     stock : number;
+    image: string;
 }
 
 export const useUpdateDrink = () => {

@@ -19,6 +19,7 @@ import { Route as IndexImport } from './pages/index'
 // Create Virtual Routes
 
 const ProtectedSnackIndexLazyImport = createFileRoute('/_protected/snack/')()
+const ProtectedMapIndexLazyImport = createFileRoute('/_protected/map/')()
 const ProtectedKebabIndexLazyImport = createFileRoute('/_protected/kebab/')()
 const ProtectedDrinkIndexLazyImport = createFileRoute('/_protected/drink/')()
 const ProtectedDashboardIndexLazyImport = createFileRoute(
@@ -47,6 +48,14 @@ const ProtectedSnackIndexLazyRoute = ProtectedSnackIndexLazyImport.update({
   getParentRoute: () => ProtectedRoute,
 } as any).lazy(() =>
   import('./pages/_protected/snack/index.lazy').then((d) => d.Route),
+)
+
+const ProtectedMapIndexLazyRoute = ProtectedMapIndexLazyImport.update({
+  id: '/map/',
+  path: '/map/',
+  getParentRoute: () => ProtectedRoute,
+} as any).lazy(() =>
+  import('./pages/_protected/map/index.lazy').then((d) => d.Route),
 )
 
 const ProtectedKebabIndexLazyRoute = ProtectedKebabIndexLazyImport.update({
@@ -129,6 +138,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedKebabIndexLazyImport
       parentRoute: typeof ProtectedImport
     }
+    '/_protected/map/': {
+      id: '/_protected/map/'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof ProtectedMapIndexLazyImport
+      parentRoute: typeof ProtectedImport
+    }
     '/_protected/snack/': {
       id: '/_protected/snack/'
       path: '/snack'
@@ -146,6 +162,7 @@ interface ProtectedRouteChildren {
   ProtectedDashboardIndexLazyRoute: typeof ProtectedDashboardIndexLazyRoute
   ProtectedDrinkIndexLazyRoute: typeof ProtectedDrinkIndexLazyRoute
   ProtectedKebabIndexLazyRoute: typeof ProtectedKebabIndexLazyRoute
+  ProtectedMapIndexLazyRoute: typeof ProtectedMapIndexLazyRoute
   ProtectedSnackIndexLazyRoute: typeof ProtectedSnackIndexLazyRoute
 }
 
@@ -154,6 +171,7 @@ const ProtectedRouteChildren: ProtectedRouteChildren = {
   ProtectedDashboardIndexLazyRoute: ProtectedDashboardIndexLazyRoute,
   ProtectedDrinkIndexLazyRoute: ProtectedDrinkIndexLazyRoute,
   ProtectedKebabIndexLazyRoute: ProtectedKebabIndexLazyRoute,
+  ProtectedMapIndexLazyRoute: ProtectedMapIndexLazyRoute,
   ProtectedSnackIndexLazyRoute: ProtectedSnackIndexLazyRoute,
 }
 
@@ -168,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof ProtectedDashboardIndexLazyRoute
   '/drink': typeof ProtectedDrinkIndexLazyRoute
   '/kebab': typeof ProtectedKebabIndexLazyRoute
+  '/map': typeof ProtectedMapIndexLazyRoute
   '/snack': typeof ProtectedSnackIndexLazyRoute
 }
 
@@ -178,6 +197,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof ProtectedDashboardIndexLazyRoute
   '/drink': typeof ProtectedDrinkIndexLazyRoute
   '/kebab': typeof ProtectedKebabIndexLazyRoute
+  '/map': typeof ProtectedMapIndexLazyRoute
   '/snack': typeof ProtectedSnackIndexLazyRoute
 }
 
@@ -189,6 +209,7 @@ export interface FileRoutesById {
   '/_protected/dashboard/': typeof ProtectedDashboardIndexLazyRoute
   '/_protected/drink/': typeof ProtectedDrinkIndexLazyRoute
   '/_protected/kebab/': typeof ProtectedKebabIndexLazyRoute
+  '/_protected/map/': typeof ProtectedMapIndexLazyRoute
   '/_protected/snack/': typeof ProtectedSnackIndexLazyRoute
 }
 
@@ -201,9 +222,18 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/drink'
     | '/kebab'
+    | '/map'
     | '/snack'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '' | '/PaketMakanan' | '/dashboard' | '/drink' | '/kebab' | '/snack'
+  to:
+    | '/'
+    | ''
+    | '/PaketMakanan'
+    | '/dashboard'
+    | '/drink'
+    | '/kebab'
+    | '/map'
+    | '/snack'
   id:
     | '__root__'
     | '/'
@@ -212,6 +242,7 @@ export interface FileRouteTypes {
     | '/_protected/dashboard/'
     | '/_protected/drink/'
     | '/_protected/kebab/'
+    | '/_protected/map/'
     | '/_protected/snack/'
   fileRoutesById: FileRoutesById
 }
@@ -250,6 +281,7 @@ export const routeTree = rootRoute
         "/_protected/dashboard/",
         "/_protected/drink/",
         "/_protected/kebab/",
+        "/_protected/map/",
         "/_protected/snack/"
       ]
     },
@@ -267,6 +299,10 @@ export const routeTree = rootRoute
     },
     "/_protected/kebab/": {
       "filePath": "_protected/kebab/index.lazy.tsx",
+      "parent": "/_protected"
+    },
+    "/_protected/map/": {
+      "filePath": "_protected/map/index.lazy.tsx",
       "parent": "/_protected"
     },
     "/_protected/snack/": {

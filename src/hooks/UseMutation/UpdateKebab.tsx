@@ -8,6 +8,7 @@ interface FormUpdateKebabType {
   size: string;
   level: number;  // Level dalam bentuk angka
   stock: number;
+  imageUrl: string;
 }
 
 export const UpdateKebab = () => {

@@ -6,6 +6,7 @@ interface FormUpdateSnackType {
     namaSnack: string;
     harga: number;
     stock: number;
+    image: string;
 }
 
 export const UpdateSnack = () => {

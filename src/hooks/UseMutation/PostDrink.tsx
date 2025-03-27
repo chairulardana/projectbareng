@@ -6,6 +6,7 @@ interface FormCreateDrinkType {
     harga: number;
     suhu: string;
     stock: number;
+    image: string;
 }
 
 export const useCreateDrink = () => {

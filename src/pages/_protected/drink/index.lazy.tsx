@@ -1,11 +1,10 @@
 import { createLazyFileRoute } from '@tanstack/react-router';
-import React from 'react';
-import { Box, Typography, Card, CardContent, Grid, CardActions, CircularProgress, Button, TextField, Modal, IconButton } from "@mui/material";
-import { GetDrink } from '../../../hooks/UseQuery/GetDrink'; // Mengimpor hook untuk mengambil data minuman
+import React, { useState } from 'react';
+import { Box, Typography, Card, CardContent, Grid, CardActions, CircularProgress, CircularProgressProps, Button, TextField, Modal, IconButton } from "@mui/material";
+import { GetDrink } from '../../../hooks/UseQuery/GetDrink';
 import { useCreateDrink } from '../../../hooks/UseMutation/PostDrink';
 import { useDeleteDrink } from '../../../hooks/UseMutation/DeleteDrink';
 import { useUpdateDrink } from '../../../hooks/UseMutation/UpdateDrink';
-import { useState } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Swal from 'sweetalert2';
@@ -42,19 +41,46 @@ function CircularProgressWithLabel(
   );
 }
 
+interface Drink {
+  id_Drink: string;
+  nama_Minuman: string;
+  harga: string;
+  suhu: string;
+  stock: string;
+  image: string;
+}
+
+interface FormCreateDrinkType {
+  namaMinuman: string;
+  harga: number;
+  suhu: string;
+  stock: string;
+  image: string; // Added image URL
+}
+
+interface FormUpdateDrinkType {
+  id_Drink: number;
+  namaMinuman: string;
+  harga: number;
+  suhu: string;
+  stock: string;
+  image: string; // Added image URL
+}
+
 function Drink() {
-  const { data, isLoading, error, refetch } = GetDrink(); // Add refetch here to reload data
+  const { data, isLoading, error, refetch } = GetDrink();
   const { mutate: createDrink } = useCreateDrink();
   const { mutate: deleteDrink } = useDeleteDrink();
   const { mutate: updateDrink } = useUpdateDrink();
 
   const [openModal, setOpenModal] = useState(false);
-  const [selectedDrink, setSelectedDrink] = useState<{ nama_Minuman: string; harga: string; suhu: string; stock: string; id_Drink: string } | null>(null);
-  const [newDrink, setNewDrink] = useState({
-    nama_Minuman: '',
-    harga: '',
+  const [selectedDrink, setSelectedDrink] = useState<Drink | null>(null);
+  const [newDrink, setNewDrink] = useState<FormCreateDrinkType>({
+    namaMinuman: '',
+    harga: 0,
     suhu: '',
     stock: '',
+    image: '', // Added image URL
   });
 
   const [progress, setProgress] = React.useState(10);
@@ -68,7 +94,7 @@ function Drink() {
     };
   }, []);
 
-  const handleOpenModal = (drink) => {
+  const handleOpenModal = (drink: Drink): void => {
     setSelectedDrink({ ...drink });
     setOpenModal(true);
   };
@@ -78,7 +104,7 @@ function Drink() {
     setSelectedDrink(null);
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     if (selectedDrink) {
       setSelectedDrink((prev) => ({
@@ -88,52 +114,74 @@ function Drink() {
     } else {
       setNewDrink((prev) => ({
         ...prev,
-        [name]: value,
+        [name]: name === 'harga' ? Number(value) : value,
       }));
     }
-    console.log(`Field: ${name}, Value: ${value}`); // Debugging line
+  };
+
+  const handleLevelChange = (e: React.ChangeEvent<{ value: unknown }>) => {
+    const value = e.target.value as number;
+    if (selectedDrink) {
+      setSelectedDrink((prev) => ({
+        ...prev!,
+        level: value,
+      }));
+    } else {
+      setNewDrink((prev) => ({
+        ...prev,
+        level: value,
+      }));
+    }
   };
 
   const handleCreateDrink = () => {
-    if (!newDrink.nama_Minuman || !newDrink.harga || !newDrink.suhu || !newDrink.stock) {
+    if (!newDrink.namaMinuman || !newDrink.harga || !newDrink.suhu || !newDrink.stock || !newDrink.image) {
       Swal.fire('Error', 'All fields are required!', 'error');
       return;
     }
 
-    console.log("Creating drink with data:", newDrink); // Debugging line
     createDrink(newDrink, {
       onSuccess: () => {
-        setNewDrink({ nama_Minuman: '', harga: '', suhu: '', stock: '' });
+        setNewDrink({ namaMinuman: '', harga: 0, suhu: '', stock: '', image: '' });
         Swal.fire('Success', 'Drink added successfully!', 'success');
-        refetch(); // Refetch the data to get the new drink added to the list
+        refetch();
       },
       onError: (error) => {
-        console.error("Error creating drink:", error); // Debugging line
+        console.error("Error creating drink:", error);
         Swal.fire('Error', `Failed to add drink: ${error.message}`, 'error');
       },
     });
   };
 
   const handleUpdateDrink = () => {
-    if (!selectedDrink?.nama_Minuman || !selectedDrink?.harga || !selectedDrink?.suhu || !selectedDrink?.stock) {
+    if (!selectedDrink?.namaMinuman || !selectedDrink?.harga || !selectedDrink?.suhu || !selectedDrink?.stock || !selectedDrink?.image) {
       Swal.fire('Error', 'All fields are required!', 'error');
       return;
     }
 
-    updateDrink(selectedDrink, {
+    const drinkData: FormUpdateDrinkType = {
+      id_Drink: Number(selectedDrink.id_Drink),
+      namaMinuman: selectedDrink.namaMinuman,
+      harga: Number(selectedDrink.harga),
+      suhu: selectedDrink.suhu,
+      stock: selectedDrink.stock,
+      image: selectedDrink.image, // Include image
+    };
+
+    updateDrink(drinkData, {
       onSuccess: () => {
         handleCloseModal();
         Swal.fire('Success', 'Drink updated successfully!', 'success');
-        refetch(); // Refetch the data after update
+        refetch();
       },
       onError: (error) => {
-        console.error("Error updating drink:", error); // Debugging line
+        console.error("Error updating drink:", error);
         Swal.fire('Error', `Failed to update drink: ${error.message}`, 'error');
       },
     });
   };
 
-  const handleDeleteDrink = (id) => {
+  const handleDeleteDrink = (id: string) => {
     Swal.fire({
       title: 'Are you sure?',
       text: "You won't be able to revert this!",
@@ -143,13 +191,13 @@ function Drink() {
       cancelButtonText: 'No, cancel!',
     }).then((result) => {
       if (result.isConfirmed) {
-        deleteDrink(id, {
+        deleteDrink(Number(id), {
           onSuccess: () => {
             Swal.fire('Deleted!', 'The drink has been deleted.', 'success');
-            refetch(); // Refetch the data after deletion
+            refetch();
           },
           onError: (error) => {
-            console.error("Error deleting drink:", error); // Debugging line
+            console.error("Error deleting drink:", error);
             Swal.fire('Error', `Failed to delete drink: ${error.message}`, 'error');
           },
         });
@@ -185,8 +233,8 @@ function Drink() {
             <TextField
               fullWidth
               label="Nama Minuman"
-              name="nama_Minuman"
-              value={newDrink.nama_Minuman}
+              name="namaMinuman"
+              value={newDrink.namaMinuman}
               onChange={handleInputChange}
               required
             />
@@ -196,6 +244,7 @@ function Drink() {
               fullWidth
               label="Harga"
               name="harga"
+              type="number"
               value={newDrink.harga}
               onChange={handleInputChange}
               required
@@ -221,6 +270,16 @@ function Drink() {
               required
             />
           </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Image URL"
+              name="image"
+              value={newDrink.image}
+              onChange={handleInputChange}
+              required
+            />
+          </Grid>
           <Grid item xs={12}>
             <Button variant="contained" color="primary" onClick={handleCreateDrink}>
               Add Drink
@@ -240,6 +299,7 @@ function Drink() {
                   <Typography variant="body2">Harga: {drink.harga}</Typography>
                   <Typography variant="body2">Suhu: {drink.suhu}</Typography>
                   <Typography variant="body2">Stock: {drink.stock}</Typography>
+                  {drink.image && <img src={drink.image} alt={drink.namaMinuman} width="100" height="100" />}
                 </CardContent>
                 <CardActions>
                   <IconButton color="primary" onClick={() => handleOpenModal(drink)}>
@@ -266,8 +326,8 @@ function Drink() {
               <TextField
                 fullWidth
                 label="Nama Minuman"
-                name="nama_Minuman"
-                value={selectedDrink?.nama_Minuman || ''}
+                name="namaMinuman"
+                value={selectedDrink?.namaMinuman || ''}
                 onChange={handleInputChange}
                 required
               />
@@ -277,6 +337,7 @@ function Drink() {
                 fullWidth
                 label="Harga"
                 name="harga"
+                type="number"
                 value={selectedDrink?.harga || ''}
                 onChange={handleInputChange}
                 required
@@ -301,6 +362,17 @@ function Drink() {
                 onChange={handleInputChange}
                 required
               />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Image URL"
+                name="image"
+                value={selectedDrink?.image || ''}
+                onChange={handleInputChange}
+                required
+              />
+              {selectedDrink?.image && <img src={selectedDrink.image} alt={selectedDrink.namaMinuman} width="100" height="100" />}
             </Grid>
             <Grid item xs={12}>
               <Button variant="contained" color="primary" onClick={handleUpdateDrink}>

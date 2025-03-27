@@ -11,6 +11,8 @@ interface FormUpdatePaketType {
     harga_Paket: number;
     diskon: number;
     harga_Paket_After_Diskon: number;
+    stok: number;
+    image: string;
 }
 
 export const UpdatePaket = () => {
